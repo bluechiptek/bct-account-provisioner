@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Stack creates roles and permissions needed for Blue Chip Tek's Optimized Cloud.
+Resources:
+  OptimizedCloudManagerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 555703595940
+            Action:
+              - sts:AssumeRole
+      RoleName: BctOptimizedCloudManager
+
+  CloudHealthRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 454464851268
+            Action:
+              - sts:AssumeRole
+      RoleName: BctCloudHealth
+
+  ReadOnlyPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BctReadOnly
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - autoscaling:Describe*
+          - aws-portal:ViewBilling
+          - aws-portal:ViewUsage
+          - cloudformation:ListStacks
+          - cloudformation:ListStackResources
+          - cloudformation:DescribeStacks
+          - cloudformation:DescribeStackEvents
+          - cloudformation:DescribeStackResources
+          - cloudformation:GetTemplate
+          - cloudfront:Get*
+          - cloudfront:List*
+          - cloudtrail:DescribeTrails
+          - cloudtrail:ListTags
+          - cloudwatch:Describe*
+          - cloudwatch:Get*
+          - cloudwatch:List*
+          - config:Get*
+          - config:Describe*
+          - config:Deliver*
+          - config:List*
+          - cur:Describe*
+          - dynamodb:DescribeTable
+          - dynamodb:List*
+          - ec2:Describe*
+          - elasticache:Describe*
+          - elasticache:ListTagsForResource
+          - elasticbeanstalk:Check*
+          - elasticbeanstalk:Describe*
+          - elasticbeanstalk:List*
+          - elasticbeanstalk:RequestEnvironmentInfo
+          - elasticbeanstalk:RetrieveEnvironmentInfo
+          - elasticfilesystem:Describe*
+          - elasticloadbalancing:Describe*
+          - elasticmapreduce:Describe*
+          - elasticmapreduce:List*
+          - es:List*
+          - es:Describe*
+          - iam:List*
+          - iam:Get*
+          - iam:GenerateCredentialReport
+          - kinesis:Describe*
+          - kinesis:List*
+          - lambda:List*
+          - redshift:Describe*
+          - route53:Get*
+          - route53:List*
+          - rds:Describe*
+          - rds:ListTagsForResource
+          - s3:List*
+          - s3:GetBucketTagging
+          - s3:GetBucketLocation
+          - s3:GetBucketLogging
+          - s3:GetBucketVersioning
+          - s3:GetBucketWebsite
+          - sdb:GetAttributes
+          - sdb:List*
+          - ses:Get*
+          - ses:List*
+          - sns:Get*
+          - sns:List*
+          - sqs:GetQueueAttributes
+          - sqs:ListQueues
+          - storagegateway:List*
+          - storagegateway:Describe*
+          - workspaces:Describe*
+          Resource: "*"
+      Roles:
+        - !Ref OptimizedCloudManagerRole
+        - !Ref CloudHealthRole
+
+  AcceptAccountLinkRequestPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BctAcceptAccountLinkRequest
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - organizations:ListHandshakesForAccount
+              - organizations:AcceptHandshake
+              - organizations:DeclineHandshake
+            Resource: arn:aws:organizations::555703595940:handshake/*
+      Roles:
+        - !Ref OptimizedCloudManagerRole
+
+Outputs:
+  OptimizedCloudManagerRoleArn:
+    Value: !GetAtt OptimizedCloudManagerRole.Arn
+    Export:
+      Name: BctOptimizedCloudManagerRoleArn
+
+  CloudHealthRoleArn:
+    Value: !GetAtt CloudHealthRole.Arn
+    Export:
+      Name: BctCloudHealthRoleArn
