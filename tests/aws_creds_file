@@ -1,0 +1,19 @@
+[default]
+aws_access_key_id = default
+aws_secret_access_key = default
+
+[profile-include1]
+aws_access_key_id = profile-include1
+aws_secret_access_key = profile-include1
+
+[profile-include2]
+aws_access_key_id = profile-include2
+aws_secret_access_key = profile-include2
+
+[profile-exclude1]
+aws_access_key_id = profile-exclude1
+aws_secret_access_key = profile-exclude1
+
+[profile-exclude2]
+aws_access_key_id = profile-exclude2
+aws_secret_access_key = profile-exclude2
