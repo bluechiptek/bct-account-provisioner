@@ -21,9 +21,58 @@ def test_profiles_no_filters(aws_creds_file):
     credsfile = creds.AwsCredsFile(aws_creds_file)
     profiles = credsfile.profiles
     expected_profiles = ['default',
-                        'profile-include1',
-                        'profile-include2',
-                        'profile-exclude1',
-                        'profile-exclude2']
+                         'profile-include1',
+                         'profile-include2',
+                         'profile-exclude1',
+                         'profile-exclude2']
     assert profiles == expected_profiles
 
+
+def test_profiles_include_list(aws_creds_file_string):
+    credsfile = creds.AwsCredsFile(aws_creds_file_string,
+                                   include=['profile-include1',
+                                            'profile-include2'])
+    profiles = credsfile.profiles
+    expected_profiles = ['profile-include1',
+                         'profile-include2']
+    assert profiles == expected_profiles
+
+
+def test_profiles_include_regex(aws_creds_file_string):
+    credsfile = creds.AwsCredsFile(aws_creds_file_string,
+                                   include='.*include*')
+    profiles = credsfile.profiles
+    expected_profiles = ['profile-include1',
+                         'profile-include2']
+    assert profiles == expected_profiles
+
+
+def test_profiles_exclude_list(aws_creds_file_string):
+    credsfile = creds.AwsCredsFile(aws_creds_file_string,
+                                   exclude=['profile-exclude1',
+                                            'profile-exclude2'])
+    profiles = credsfile.profiles
+    expected_profiles = ['default',
+                         'profile-include1',
+                         'profile-include2']
+    assert profiles == expected_profiles
+
+
+def test_profiles_exclude_regex(aws_creds_file_string):
+    credsfile = creds.AwsCredsFile(aws_creds_file_string,
+                                   exclude='.*exclude*')
+    profiles = credsfile.profiles
+    expected_profiles = ['default',
+                         'profile-include1',
+                         'profile-include2']
+    assert profiles == expected_profiles
+
+
+def test_profiles_include_exclude(aws_creds_file_string):
+    credsfile = creds.AwsCredsFile(aws_creds_file_string,
+                                   include='.*profile*',
+                                   exclude='.*exclude*')
+    profiles = credsfile.profiles
+    expected_profiles = ['profile-include1',
+                         'profile-include2']
+    assert profiles == expected_profiles
