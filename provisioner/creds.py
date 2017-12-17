@@ -22,7 +22,11 @@ class AwsCredsFile:
         elif type(credsfile) == str:
             self._credsfile = credsfile
         else:
-            raise TypeError("credsfile should be string or file object.")
+            raise TypeError(
+                "credsfile is {} and should be string or file object.".format(
+                    type(credsfile)
+                )
+            )
         self._include = include
         self._exclude = exclude
 
