@@ -1,6 +1,6 @@
 import pytest
 
-import provisioner.creds as creds
+import provisioner.accounts as creds
 
 
 @pytest.fixture
