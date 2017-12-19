@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: template used for testing updating a stack
+Resources:
+  OcmsAccountProvisionerTestRole1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 555703595940
+            Action:
+              - sts:AssumeRole
+      RoleName: OcmsAccountProvisionerTestRole1
+      Path: /
+  OcmsAccountProvisionerTestRole2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 123456789
+            Action:
+              - sts:AssumeRole
+      RoleName: OcmsAccountProvisionerTestRole2
+      Path: /
