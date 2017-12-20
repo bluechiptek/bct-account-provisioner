@@ -63,6 +63,8 @@ class Stack:
             self._create(template, cfn_params)
         elif hexdigest != self.hexdigest:
             self._update(template, cfn_params)
+            # remove cached hexdigest
+            self._hexdigest = None
         else:
             logging.info("CFN stack {} already up-to-date.".format(self.name))
 
