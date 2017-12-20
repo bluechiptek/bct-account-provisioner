@@ -55,5 +55,3 @@ class TestCfnCreateUpdate:
         stack.apply_template(template1.body)
         stack.apply_template(template2.body)
         assert stack.hexdigest == template2.hexdigest
-
-
