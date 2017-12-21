@@ -1,7 +1,5 @@
 from hashlib import sha1
-import json
 import logging
-import yaml
 
 import boto3
 from botocore.exceptions import ClientError, WaiterError
