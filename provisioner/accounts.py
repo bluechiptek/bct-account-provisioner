@@ -1,5 +1,6 @@
 import _io
 import configparser
+import logging
 import re
 
 import boto3
@@ -40,11 +41,14 @@ class AwsCredsFile:
         target_profiles = []
         for profile in config.sections():
             if self._exclude and self._match(profile, self._exclude):
+                logging.info("Excluding profile {}".format(profile))
                 continue
             elif self._include:
                 if self._match(profile, self._include):
+                    logging.info("Including profile {}".format(profile))
                     target_profiles.append(profile)
             else:
+                logging.info("Including profile {}".format(profile))
                 target_profiles.append(profile)
         return target_profiles
 
