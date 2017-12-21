@@ -1,7 +1,7 @@
 import sys
 
-from provisioner.accounts import AwsCredsFile
-from provisioner.stacks import Stack, Template
+from lib.accounts import AwsCredsFile
+from lib.stacks import Stack, Template
 
 
 class AwsProvisioner():
