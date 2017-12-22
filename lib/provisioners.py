@@ -4,6 +4,8 @@ import sys
 from lib.accounts import AwsCredsFile, AwsAccount
 from lib.stacks import Stack, Template
 
+logger = logging.getLogger(__name__)
+
 
 class AwsProvisioner():
 
@@ -48,7 +50,7 @@ class AwsProvisioner():
         for account in self._accounts:
             cfn = account.session.client('cloudformation',
                                          region_name=self._region)
-            logging.info("Provisioning account {} ({})".format(
+            logger.info("Provisioning account {} ({})".format(
                 account.id, account.profile_name
             ))
             stack = Stack(self._stack_name, cfn_client=cfn)

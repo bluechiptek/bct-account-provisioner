@@ -4,6 +4,8 @@ import logging
 import boto3
 from botocore.exceptions import ClientError, WaiterError
 
+logger = logging.getLogger(__name__)
+
 
 class Stack:
     """CRUD for CloudFormation Stack.
@@ -40,7 +42,7 @@ class Stack:
         """
         # Check if stack already exists, if rolled back, then _delete stack
         if self.status == 'ROLLBACK_COMPLETE':
-            logging.warning(
+            logger.warning(
                 "CFN stack {} in a ROLLBACK_COMPLETE state.".format(self.name)
             )
             self._delete()
@@ -64,7 +66,7 @@ class Stack:
             # remove cached hexdigest
             self._hexdigest = None
         else:
-            logging.info("CFN stack {} already up-to-date.".format(self.name))
+            logger.info("CFN stack {} already up-to-date.".format(self.name))
 
     @property
     def arn(self):
@@ -90,7 +92,7 @@ class Stack:
         create_waiter = self._cfn.get_waiter(condition)
         waiter_delay = 10
         waiter_max_attempts = 18
-        logging.info("Waiting up to {} seconds for {}.".format(
+        logger.info("Waiting up to {} seconds for {}.".format(
             str(waiter_delay * waiter_max_attempts),
             condition
         ))
@@ -106,13 +108,13 @@ class Stack:
                 StackName=self.name)
             for event in events_response['StackEvents']:
                 if event['ResourceStatus'] == 'CREATE_FAILED':
-                    logging.error(event['ResourceStatusReason'])
+                    logger.error(event['ResourceStatusReason'])
             raise RuntimeError(
                 "Stack failed to _create with status {}".format(
                     self.status))
 
     def _create(self, template, param_list=None):
-            logging.info(
+            logger.info(
                 "Creating CFN stack {} with Params {}".format(
                     self.name,
                     param_list
@@ -126,16 +128,16 @@ class Stack:
             )
 
             arn = response['StackId']
-            logging.info("StackId {}".format(arn))
+            logger.info("StackId {}".format(arn))
             self.__cfn_wait('stack_create_complete')
-            logging.info("Stack {} created".format(self.name))
+            logger.info("Stack {} created".format(self.name))
 
     def _delete(self):
         arn = self.arn
-        logging.info("Deleting stack with ARN {}".format(arn))
+        logger.info("Deleting stack with ARN {}".format(arn))
         self._cfn.delete_stack(StackName=arn)
         self.__cfn_wait('stack_delete_complete')
-        logging.info("Stack {} deleted".format(self.name))
+        logger.info("Stack {} deleted".format(self.name))
 
     @property
     def hexdigest(self):
@@ -180,7 +182,7 @@ class Stack:
         }
 
     def _update(self, template, param_list=None):
-        logging.info(
+        logger.info(
             "Updating CFN stack {} with Params {}".format(
                 self.name,
                 param_list
@@ -193,7 +195,7 @@ class Stack:
             Parameters=param_list
         )
         self.__cfn_wait('stack_update_complete')
-        logging.info("Stack {} updated".format(self.name))
+        logger.info("Stack {} updated".format(self.name))
 
 
 class Template:
@@ -259,9 +261,3 @@ class Template:
                     "Template {} failed to validate".format(self._template_path)
                 )
         return template_body
-
-
-
-
-
-
