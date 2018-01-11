@@ -1,6 +1,11 @@
 import _io
 import configparser
+import logging
 import re
+
+import boto3
+
+logger = logging.getLogger(__name__)
 
 
 class AwsCredsFile:
@@ -38,11 +43,14 @@ class AwsCredsFile:
         target_profiles = []
         for profile in config.sections():
             if self._exclude and self._match(profile, self._exclude):
+                logger.info("Excluding profile {}".format(profile))
                 continue
             elif self._include:
                 if self._match(profile, self._include):
+                    logger.info("Including profile {}".format(profile))
                     target_profiles.append(profile)
             else:
+                logger.info("Including profile {}".format(profile))
                 target_profiles.append(profile)
         return target_profiles
 
@@ -57,3 +65,30 @@ class AwsCredsFile:
         else:
             # If not list, assume regex
             return re.match(criteria, item)
+
+
+class AwsAccount:
+    """Contains metadata and connection info for each account
+
+    Args:
+        profile_name: Name of the profile used to build the AwsAccount object.
+
+    """
+
+    def __init__(self, profile_name):
+        self._profile_name = profile_name
+        self._session = boto3.session.Session(profile_name=profile_name)
+        self._id = self._session.client('sts').get_caller_identity()['Account']
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def profile_name(self):
+        return self._profile_name
+
+    @property
+    def session(self):
+        return self._session
+
