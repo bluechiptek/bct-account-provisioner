@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from lib.accounts import AwsAccounts, AwsAccount
+from lib.accounts import AwsAccounts
 from lib.stacks import Stack, Template
 
 logger = logging.getLogger(__name__)
@@ -21,11 +21,11 @@ class AwsProvisioner:
         self._accounts = AwsAccounts(
                                     include=include_profiles,
                                     exclude=exclude_profiles
-                                    ).target_accounts()
+                                    ).target_accounts
 
     @property
-    def profiles(self):
-        return [account.profile_name for account in self._accounts]
+    def accounts(self):
+        return self._accounts
 
     @property
     def template(self):
