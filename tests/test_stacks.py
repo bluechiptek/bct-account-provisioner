@@ -4,9 +4,9 @@ import pytest
 
 from lib.stacks import Stack, Template
 
-VALID_TEMPLATE1_URL = 'file://lib/tests/cfn_valid_template1.yaml'
-VALID_TEMPLATE2_URL = 'file://lib/tests/cfn_valid_template2.yaml'
-INVALID_TEMPLATE_URL = 'file://lib/tests/cfn_invalid_template.yaml'
+VALID_TEMPLATE1_URL = 'file://tests/cfn_valid_template1.yaml'
+VALID_TEMPLATE2_URL = 'file://tests/cfn_valid_template2.yaml'
+INVALID_TEMPLATE_URL = 'file://tests/cfn_invalid_template.yaml'
 
 
 def test_template_invalid_path_format():

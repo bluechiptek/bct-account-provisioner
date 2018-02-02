@@ -7,13 +7,13 @@ from lib.accounts import AwsCredsFile, AwsAccount
 
 @pytest.fixture
 def aws_creds_file_string():
-    with open("lib/tests/aws_creds_file") as credsfile:
+    with open("tests/aws_creds_file") as credsfile:
         return credsfile.read()
 
 
 @pytest.fixture
 def aws_creds_file_obj():
-    return open("lib/tests/aws_creds_file")
+    return open("tests/aws_creds_file")
 
 
 # Run test using both accounts file as string or as object
