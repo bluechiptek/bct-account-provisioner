@@ -8,65 +8,6 @@ import boto3
 logger = logging.getLogger(__name__)
 
 
-class AwsCredsFile:
-    """Parses and provides information on an AWS credentials file.
-
-    Args:
-        credsfile:  A string object with the contents of an AWS credentials
-                    file. If a file object (_io.TextIOWrapper) is passed then
-                    the contents of the file will be read.
-        include:    A list or regex of profile names that should be
-                    provisioned.
-        exclude:    A list or regex of profiles names that should not be
-                    provisioned. Exclude is processed before includes.
-    """
-
-    def __init__(self, credsfile, include=None, exclude=None):
-        if type(credsfile) == _io.TextIOWrapper:
-            self._credsfile = credsfile.read()
-        elif type(credsfile) == str:
-            self._credsfile = credsfile
-        else:
-            raise TypeError(
-                "credsfile is {} and should be string or file object.".format(
-                    type(credsfile)
-                )
-            )
-        self._include = include
-        self._exclude = exclude
-
-    @property
-    def profiles(self):
-        """Returns a list of profile names to be provisioned."""
-        config = configparser.ConfigParser()
-        config.read_string(self._credsfile)
-        target_profiles = []
-        for profile in config.sections():
-            if self._exclude and self._match(profile, self._exclude):
-                logger.info("Excluding profile {}".format(profile))
-                continue
-            elif self._include:
-                if self._match(profile, self._include):
-                    logger.info("Including profile {}".format(profile))
-                    target_profiles.append(profile)
-            else:
-                logger.info("Including profile {}".format(profile))
-                target_profiles.append(profile)
-        return target_profiles
-
-    @staticmethod
-    def _match(item, criteria):
-        """Determines if an item matches a criteria.
-
-        Criteria is either a list or a regex. Returns True or False.
-        """
-        if type(criteria) is list:
-            return item in criteria
-        else:
-            # If not list, assume regex
-            return re.match(criteria, item)
-
-
 class AwsAccount:
     """Contains metadata and connection info for each account
 
@@ -91,4 +32,54 @@ class AwsAccount:
     @property
     def session(self):
         return self._session
+
+
+class AwsAccounts:
+    """Provides a list of target AwsAccount objects that will be provisioned.
+
+    credentials files defaults to ~/.aws/credentials or needs to be overrided
+    via the AWS_SHARED_CREDENTIALS_FILE env var
+
+    Args:
+        include:    A list or regex of profile names that should be
+                    provisioned.
+        exclude:    A list or regex of profiles names that should not be
+                    provisioned. Exclude is processed before includes.
+    """
+
+    def __init__(self, include=None, exclude=None):
+        self._include = include
+        self._exclude = exclude
+
+    @property
+    def target_accounts(self):
+        """Returns a list of profile names to be provisioned."""
+        profiles = boto3.Session().available_profiles
+        target_accounts = []
+        for profile in profiles:
+            if self._exclude and self._match(profile, self._exclude):
+                logger.info("Excluding profile {}".format(profile))
+                continue
+            elif self._include:
+                if self._match(profile, self._include):
+                    logger.info("Including profile {}".format(profile))
+                    account = AwsAccount(profile)
+                    target_accounts.append(account)
+            else:
+                logger.info("Including profile {}".format(profile))
+                account = AwsAccount(profile)
+                target_accounts.append(account)
+        return target_accounts
+
+    @staticmethod
+    def _match(item, criteria):
+        """Determines if an item matches a criteria.
+
+        Criteria is either a list or a regex. Returns True or False.
+        """
+        if type(criteria) is list:
+            return item in criteria
+        else:
+            # If not list, assume regex
+            return re.match(criteria, item)
 

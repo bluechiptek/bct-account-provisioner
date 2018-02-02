@@ -21,7 +21,7 @@ def test_template_invalid_file():
 
 def test_template_hexdigest():
     """hexdigest test reading from file and validating template"""
-    template = Template(VALID_TEMPLATE1_URL)
+    template = Template(VALID_TEMPLATE1_URL, validate=False)
     assert template.hexdigest == 'e52c979111e5ea905648146555c689b32b2d5bea'
 
 

@@ -2,82 +2,79 @@ import botocore
 import moto
 import pytest
 
-from lib.accounts import AwsCredsFile, AwsAccount
+from lib.accounts import AwsAccounts, AwsAccount
 
 
-@pytest.fixture
-def aws_creds_file_string():
-    with open("tests/aws_creds_file") as credsfile:
-        return credsfile.read()
-
-
-@pytest.fixture
-def aws_creds_file_obj():
-    return open("tests/aws_creds_file")
-
-
-# Run test using both accounts file as string or as object
-@pytest.mark.parametrize('aws_creds_file',
-                         [aws_creds_file_string(), aws_creds_file_obj()])
-def test_profiles_no_filters(aws_creds_file):
-    credsfile = AwsCredsFile(aws_creds_file)
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_no_filters():
+    accounts = AwsAccounts().target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['default',
                          'profile-include1',
                          'profile-include2',
                          'profile-exclude1',
                          'profile-exclude2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
-def test_profiles_include_list(aws_creds_file_string):
-    credsfile = AwsCredsFile(aws_creds_file_string,
-                             include=['profile-include1',
-                                      'profile-include2'])
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_include_list():
+    accounts = AwsAccounts(
+                            include=['profile-include1',
+                                     'profile-include2']
+                           ).target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['profile-include1',
                          'profile-include2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
-def test_profiles_include_regex(aws_creds_file_string):
-    credsfile = AwsCredsFile(aws_creds_file_string,
-                             include='.*include*')
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_include_regex():
+    accounts = AwsAccounts(
+                            include='.*include*'
+                           ).target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['profile-include1',
                          'profile-include2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
-def test_profiles_exclude_list(aws_creds_file_string):
-    credsfile = AwsCredsFile(aws_creds_file_string,
-                             exclude=['profile-exclude1',
-                                      'profile-exclude2'])
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_exclude_list():
+    accounts = AwsAccounts(
+                            exclude=['profile-exclude1',
+                                     'profile-exclude2']
+                           ).target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['default',
                          'profile-include1',
                          'profile-include2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
-def test_profiles_exclude_regex(aws_creds_file_string):
-    credsfile = AwsCredsFile(aws_creds_file_string,
-                             exclude='.*exclude*')
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_exclude_regex():
+    accounts = AwsAccounts(
+                            exclude='.*exclude*'
+                           ).target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['default',
                          'profile-include1',
                          'profile-include2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
-def test_profiles_include_exclude(aws_creds_file_string):
-    credsfile = AwsCredsFile(aws_creds_file_string,
-                             include='.*profile*',
-                             exclude='.*exclude*')
-    profiles = credsfile.profiles
+@moto.mock_sts
+def test_profiles_include_exclude():
+    accounts = AwsAccounts(
+                            include='.*profile*',
+                            exclude='.*exclude*'
+                           ).target_accounts
+    profiles = [account.profile_name for account in accounts]
     expected_profiles = ['profile-include1',
                          'profile-include2']
-    assert profiles == expected_profiles
+    assert profiles.sort() == expected_profiles.sort()
 
 
 @moto.mock_sts
