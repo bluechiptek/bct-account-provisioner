@@ -1,34 +1,31 @@
 import logging
 import sys
 
-from lib.accounts import AwsCredsFile, AwsAccount
+from lib.accounts import AwsAccounts
 from lib.stacks import Stack, Template
 
 logger = logging.getLogger(__name__)
 
 
-class AwsProvisioner():
+class AwsProvisioner:
 
     def __init__(self,
-                 creds_file_path,
                  cfn_template_path,
                  region,
                  stack_name,
                  include_profiles=None,
                  exclude_profiles=None):
-        with open(creds_file_path) as creds_file:
-            self._creds = AwsCredsFile(creds_file.read(),
-                                      include=include_profiles,
-                                      exclude=exclude_profiles)
         self._region = region
         self._stack_name = stack_name
         self._template = Template(cfn_template_path)
-        self._accounts = [AwsAccount(profile)
-                          for profile in self._creds.profiles]
+        self._accounts = AwsAccounts(
+                                    include=include_profiles,
+                                    exclude=exclude_profiles
+                                    ).target_accounts
 
     @property
-    def profiles(self):
-        return self._creds.profiles
+    def accounts(self):
+        return self._accounts
 
     @property
     def template(self):

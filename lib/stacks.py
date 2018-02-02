@@ -206,7 +206,7 @@ class Template:
 
     """
 
-    def __init__(self, template_path, validate=True):
+    def __init__(self, template_path):
         if (template_path.startswith('file://')
             or template_path.startswith('s3://')):
                 self._template_path = template_path
@@ -214,7 +214,6 @@ class Template:
             raise ValueError(
                 "template_path must start with 'file://' or 's3://'"
             )
-        self._validate = validate
         self._body = self.__read_template()
         self._hexdigest = sha1(self._body.encode()).hexdigest()
 
@@ -251,13 +250,4 @@ class Template:
         # this is needed when comparing templates with each other
         if not template_body.endswith('\n'):
             template_body = template_body + '\n'
-        # Moto doesn't implement validate_template, so need a way to disable
-        # during testing.
-        if self._validate:
-            try:
-                cfn.validate_template(TemplateBody=template_body)
-            except ClientError:
-                raise RuntimeError(
-                    "Template {} failed to validate".format(self._template_path)
-                )
         return template_body

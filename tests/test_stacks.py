@@ -1,22 +1,14 @@
-import botocore
 import moto
 import pytest
 
 from lib.stacks import Stack, Template
-
-VALID_TEMPLATE1_URL = 'file://lib/tests/cfn_valid_template1.yaml'
-VALID_TEMPLATE2_URL = 'file://lib/tests/cfn_valid_template2.yaml'
-INVALID_TEMPLATE_URL = 'file://lib/tests/cfn_invalid_template.yaml'
+from tests import (VALID_TEMPLATE1_URL,
+                   VALID_TEMPLATE2_URL)
 
 
 def test_template_invalid_path_format():
     with pytest.raises(ValueError):
         Template("test")
-
-
-def test_template_invalid_file():
-    with pytest.raises(RuntimeError):
-        Template(INVALID_TEMPLATE_URL)
 
 
 def test_template_hexdigest():
@@ -32,8 +24,8 @@ def cfn_templates():
     using mock_cloudformation to fail.
     """
     templates = (
-        Template(VALID_TEMPLATE1_URL, validate=False),
-        Template(VALID_TEMPLATE2_URL, validate=False)
+        Template(VALID_TEMPLATE1_URL),
+        Template(VALID_TEMPLATE2_URL)
                  )
     return templates
 

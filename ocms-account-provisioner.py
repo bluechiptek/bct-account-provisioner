@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-import pathlib
+import os
+from pathlib import Path
 
 from lib.provisioners import AwsProvisioner
 
@@ -14,7 +15,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('--aws-creds-file',
-                    default=str(pathlib.Path.home()) + "/.aws/credentials",
+                    default=None,
                     help="Path to non-default aws credentials file."
                     )
 parser.add_argument('--cfn-template-url',
@@ -31,12 +32,13 @@ parser.add_argument('--cfn-stack-name',
                     )
 parser.add_argument('--aws-include-profiles',
                     default=None,
-                    help="list or regex of profiles that should be provisioned"
+                    help="comma separated list or regex of profiles that "
+                         "should be provisioned"
                     )
 parser.add_argument('--aws-exclude-profiles',
                     default=None,
-                    help="list or regex of profiles that should not be "
-                          "provisioned."
+                    help="comma separated list or regex of profiles that "
+                         "should not be provisioned."
                     )
 parser.add_argument('--no-confirm',
                     action='store_true',
@@ -50,6 +52,17 @@ parser.add_argument('--log-level',
 args = parser.parse_args()
 
 ##########################################################################
+
+
+def list_or_str(text):
+    """returns either a list or string based on if text is comma separated"""
+
+    if text is None:
+        return None
+    elif "," in text:
+        return text.split(",")
+    else:
+        return text
 
 
 if __name__ == '__main__':
@@ -66,12 +79,30 @@ if __name__ == '__main__':
     console_handler = logging.StreamHandler()
     logger.addHandler(console_handler)
 
-    aws_provisioner = AwsProvisioner(args.aws_creds_file,
-                                     args.cfn_template_url,
-                                     args.aws_region,
-                                     args.cfn_stack_name,
-                                     include_profiles=args.aws_include_profiles,
-                                     exclude_profiles=args.aws_exclude_profiles
+    if args.aws_creds_file:
+        if Path(args.aws_creds_file).exists():
+            os.environ['AWS_SHARED_CREDENTIALS_FILE'] = args.aws_creds_file
+        else:
+            raise ValueError(
+                "creds file {} does not exist".format(args.aws_creds_file)
+            )
+
+    if not (args.cfn_template_url.startswith("s3://")
+            or args.cfn_template_url.startswith("file://")):
+        raise ValueError(
+            "cfn_template_url must start with s3:// or file://"
+        )
+
+    aws_provisioner = AwsProvisioner(
+                                         args.cfn_template_url,
+                                         args.aws_region,
+                                         args.cfn_stack_name,
+                                         include_profiles=list_or_str(
+                                             args.aws_include_profiles
+                                         ),
+                                         exclude_profiles=list_or_str(
+                                             args.aws_exclude_profiles
+                                         )
                                      )
 
     aws_provisioner.provision_accounts(confirm=not args.no_confirm)
