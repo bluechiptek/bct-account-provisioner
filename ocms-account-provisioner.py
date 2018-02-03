@@ -11,13 +11,11 @@ from lib.provisioners import AwsProvisioner
 # Args
 
 parser = argparse.ArgumentParser(
-    description="Provisions AWS accounts to be used with the OCMS."
+    description="Provisions AWS accounts to be used with the OCMS. Use the "
+                "AWS_SHARED_CREDENTIALS_FILE env var to change the desired "
+                "AWS credentials file."
 )
 
-parser.add_argument('--aws-creds-file',
-                    default=None,
-                    help="Path to non-default aws credentials file."
-                    )
 parser.add_argument('--cfn-template-url',
                     default='s3://bct-public-templates/ocms/ocms_iam_stack.yaml',
                     help="s3 or file url to cloudformation template."
@@ -78,14 +76,6 @@ if __name__ == '__main__':
     logger.setLevel(log_level)
     console_handler = logging.StreamHandler()
     logger.addHandler(console_handler)
-
-    if args.aws_creds_file:
-        if Path(args.aws_creds_file).exists():
-            os.environ['AWS_SHARED_CREDENTIALS_FILE'] = args.aws_creds_file
-        else:
-            raise ValueError(
-                "creds file {} does not exist".format(args.aws_creds_file)
-            )
 
     if not (args.cfn_template_url.startswith("s3://")
             or args.cfn_template_url.startswith("file://")):
