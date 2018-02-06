@@ -106,7 +106,7 @@ if __name__ == '__main__':
     if not (args.CfnTemplateUrl.startswith("s3://")
             or args.CfnTemplateUrl.startswith("file://")):
         raise ValueError(
-            "cfn_template_url must start with s3:// or file://"
+            "CfnTemplateUrl must start with s3:// or file://"
         )
 
     with open(args.ConfigFile) as config_file:
