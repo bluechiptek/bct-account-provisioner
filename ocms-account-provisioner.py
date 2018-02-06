@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import logging
 from pathlib import Path
 import yaml
@@ -22,24 +23,22 @@ parser.add_argument('--ConfigFile',
                     help="Path to provisioner config file"
                     )
 parser.add_argument('--CfnTemplateUrl',
-                    default='file://bct-ocms-iam.yaml',
                     help="s3 or file url to cloudformation template."
                     )
 parser.add_argument('--AwsRegion',
-                    default="us-east-1",
                     help="aws region used for cfn stack."
                     )
 parser.add_argument('--CfnStackName',
-                    default='bct-ocms-iam',
                     help="Name of cfn stack."
                     )
+parser.add_argument('--CfnParams',
+                    help="JSON object of CFN Params."
+                    )
 parser.add_argument('--IncludeProfiles',
-                    default=None,
                     help="comma separated list or regex of profiles that "
                          "should be provisioned"
                     )
 parser.add_argument('--ExcludeProfiles',
-                    default=None,
                     help="comma separated list or regex of profiles that "
                          "should not be provisioned."
                     )
@@ -60,10 +59,34 @@ args = parser.parse_args()
 def build_config(config_dict, args_dict):
     """Returns dict based on dict of config file contents and dict of args"""
 
-    config = config_dict.copy()
-    config.update(args_dict)
+    # Set defaults
+    config = {
+                'CfnTemplateUrl': 'file://bct-ocms-iam.yaml',
+                'AwsRegion': 'us-east-1',
+                'CfnStackName': 'bct-ocms-iam',
+    }
+
+    args_with_values = {
+        key: value for (key, value) in args_dict.items() if value is not None
+    }
+
+    config.update(config_dict)
+    config.update(args_with_values)
+
+    if not (config['CfnTemplateUrl'].startswith("s3://")
+            or config['CfnTemplateUrl'].startswith("file://")):
+        raise ValueError(
+            "CfnTemplateUrl must start with s3:// or file://"
+        )
 
     for key, value in config.items():
+        if type(value) is str:
+            try:
+                config[key] = dict(json.loads(value))
+                break
+            except ValueError:
+                pass
+
         if type(value) is str and ',' in value:
             config[key] = value.split(',')
 
@@ -104,18 +127,15 @@ if __name__ == '__main__':
             "Unable to access config file: {}".format(args.ConfigFile)
         )
 
-    if not (args.CfnTemplateUrl.startswith("s3://")
-            or args.CfnTemplateUrl.startswith("file://")):
-        raise ValueError(
-            "CfnTemplateUrl must start with s3:// or file://"
-        )
-
     with open(args.ConfigFile) as config_file:
         provision_config = build_config(
                                         yaml.load(config_file.read()),
                                         vars(args)
-                                        )
+                            )
 
-    provision_accounts(provision_config)
+    print(provision_config)
+    print(type(provision_config['CfnParams']))
+    #provision_accounts(provision_config)
+
 
 
