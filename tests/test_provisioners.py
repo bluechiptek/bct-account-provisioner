@@ -10,10 +10,17 @@ def test_provision_accounts():
     test_region = "us-east-1"
     test_stack_name = "test-stack"
     test_profiles = ['profile-include1', 'profile-include2']
+    cfn_params = {
+                    'AwsResale': 'true',
+                    'OcmsExternalId': 'test123',
+                    'CloudHealthExternalId': 'test123',
+                    'SpotinstExternalId': 'test123'
+                 }
     provisioner = AwsProvisioner(
                                     VALID_TEMPLATE1_URL,
                                     test_region,
                                     test_stack_name,
+                                    cfn_params,
                                     include_profiles=test_profiles
                                 )
 

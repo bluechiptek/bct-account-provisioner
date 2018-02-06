@@ -15,12 +15,10 @@ Parameters:
   CloudHealthExternalId:
     Description: External Id used for CloudHealth to access role
     Type: String
-    Default: none
 
   SpotinstExternalId:
     Description: External Id used for Spotinst to access role
     Type: String
-    Default: none
 
 Conditions:
   ReslaeDeploy: !Equals [ !Ref AwsResale, true]

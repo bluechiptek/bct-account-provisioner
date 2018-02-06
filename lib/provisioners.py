@@ -13,11 +13,13 @@ class AwsProvisioner:
                  cfn_template_path,
                  region,
                  stack_name,
+                 cfn_params,
                  include_profiles=None,
                  exclude_profiles=None):
         self._region = region
         self._stack_name = stack_name
         self._template = Template(cfn_template_path)
+        self._cfn_params = cfn_params
         self._accounts = AwsAccounts(
                                     include=include_profiles,
                                     exclude=exclude_profiles
@@ -51,7 +53,8 @@ class AwsProvisioner:
                 account.id, account.profile_name
             ))
             stack = Stack(self._stack_name, cfn_client=cfn)
-            stack.apply_template(self._template.body)
+            stack.apply_template(self._template.body,
+                                 parameters=self._cfn_params)
 
 
 

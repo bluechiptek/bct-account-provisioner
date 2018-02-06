@@ -1,5 +1,5 @@
 CfnParams:
   AwsResale: 'true'
-  OcmsExternalId: ocms123
-  CloudHealthExternalId: ch123
-  SpotinstExternalId: si123
+  OcmsExternalId: test123
+  CloudHealthExternalId: test123
+  SpotinstExternalId: test123

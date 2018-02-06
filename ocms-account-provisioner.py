@@ -77,6 +77,7 @@ def provision_accounts(config):
                                  config['CfnTemplateUrl'],
                                  config['AwsRegion'],
                                  config['CfnStackName'],
+                                 config['CfnParams'],
                                  include_profiles=config['IncludeProfiles'],
                                  exclude_profiles=config['ExcludeProfiles']
                                      )
