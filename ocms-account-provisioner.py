@@ -66,6 +66,7 @@ def build_config(config_dict, args_dict):
     for key, value in config.items():
         if type(value) is str and ',' in value:
             config[key] = value.split(',')
+
     return config
 
 
