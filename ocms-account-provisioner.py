@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('--cfn-template-url',
-                    default='s3://bct-public-templates/ocms/ocms_iam_stack.yaml',
+                    default='file://bct-ocms-iam.yaml',
                     help="s3 or file url to cloudformation template."
                     )
 parser.add_argument('--aws-region',
@@ -25,7 +25,7 @@ parser.add_argument('--aws-region',
                     help="aws region used for cfn stack."
                     )
 parser.add_argument('--cfn-stack-name',
-                    default='BCT-OC-CostMgmt-IAM',
+                    default='bct-ocms-iam',
                     help="Name of cfn stack."
                     )
 parser.add_argument('--aws-include-profiles',
