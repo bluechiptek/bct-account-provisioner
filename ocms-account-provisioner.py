@@ -57,37 +57,27 @@ args = parser.parse_args()
 ##########################################################################
 
 
-def list_or_str(text):
-    """Returns either a list or string based on if text is comma separated"""
+def build_config(config_dict, args_dict):
+    """Returns dict based on dict of config file contents and dict of args"""
 
-    if text is None:
-        return None
-    elif "," in text:
-        return text.split(",")
-    else:
-        return text
+    config = config_dict.copy()
+    config.update(args_dict)
 
-
-def build_config(config_yaml, args):
-    """Returns dict based on config yaml and args"""
-    config_dict = args.copy()
-    config_dict.update(yaml.load(config_yaml))
-    return config_dict
+    for key, value in config.items():
+        if type(value) is str and ',' in value:
+            config[key] = value.split(',')
+    return config
 
 
 def provision_accounts(config):
     """Provisions AWS Accounts"""
     
     aws_provisioner = AwsProvisioner(
-                                         config['CfnTemplateUrl'],
-                                         config['AwsRegion'],
-                                         config['CfnStackName'],
-                                         include_profiles=list_or_str(
-                                             config['IncludeProfiles']
-                                         ),
-                                         exclude_profiles=list_or_str(
-                                             config['ExcludeProfiles']
-                                         )
+                                 config['CfnTemplateUrl'],
+                                 config['AwsRegion'],
+                                 config['CfnStackName'],
+                                 include_profiles=config['IncludeProfiles'],
+                                 exclude_profiles=config['ExcludeProfiles']
                                      )
 
     aws_provisioner.provision_accounts(confirm=not config['NoConfirm'])
@@ -119,8 +109,11 @@ if __name__ == '__main__':
         )
 
     with open(args.ConfigFile) as config_file:
-        config = build_config(config_file.read(), vars(args))
+        provision_config = build_config(
+                                        yaml.load(config_file.read()),
+                                        vars(args)
+                                        )
 
-    provision_accounts(config)
+    provision_accounts(provision_config)
 
 

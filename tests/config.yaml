@@ -1,4 +1,5 @@
-AwsResale: 'true'
-OcmsExternalId: ocms123
-CloudHealthExternalId: ch123
-SpotinstExternalId: si123
+CfnParams:
+  AwsResale: 'true'
+  OcmsExternalId: ocms123
+  CloudHealthExternalId: ch123
+  SpotinstExternalId: si123
