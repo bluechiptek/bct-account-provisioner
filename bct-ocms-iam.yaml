@@ -1,0 +1,353 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Stack creates roles and permissions needed for BlueChipTek's Optimized Cloud.
+
+Parameters:
+  AwsResale:
+    Description: Setting to True allows for the OCMS to link AWS to BCT
+    Type: String
+    Default: false
+
+  OcmsExternalId:
+    Description: External Id used to access OCMS related role
+    Type: String
+
+  CloudHealthExternalId:
+    Description: External Id used for CloudHealth to access role
+    Type: String
+
+  SpotinstExternalId:
+    Description: External Id used for Spotinst to access role
+    Type: String
+
+Conditions:
+  ReslaeDeploy: !Equals [ !Ref AwsResale, true]
+
+Resources:
+  OptimizedCloudManagerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BctOptimizedCloudManager
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 555703595940
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref OcmsExternalId
+
+  CloudHealthRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BctCloudHealth
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 454464851268
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref CloudHealthExternalId
+
+  SpotinstRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BctSpotinst
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 922761411349
+            Action:
+              - sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref SpotinstExternalId
+
+  ReadOnlyPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BctReadOnly
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - autoscaling:Describe*
+          - aws-portal:ViewBilling
+          - aws-portal:ViewUsage
+          - cloudformation:ListStacks
+          - cloudformation:ListStackResources
+          - cloudformation:DescribeStacks
+          - cloudformation:DescribeStackEvents
+          - cloudformation:DescribeStackResources
+          - cloudformation:GetTemplate
+          - cloudfront:Get*
+          - cloudfront:List*
+          - cloudtrail:DescribeTrails
+          - cloudtrail:ListTags
+          - cloudwatch:Describe*
+          - cloudwatch:Get*
+          - cloudwatch:List*
+          - config:Get*
+          - config:Describe*
+          - config:Deliver*
+          - config:List*
+          - cur:Describe*
+          - dynamodb:DescribeTable
+          - dynamodb:List*
+          - ec2:Describe*
+          - elasticache:Describe*
+          - elasticache:ListTagsForResource
+          - elasticbeanstalk:Check*
+          - elasticbeanstalk:Describe*
+          - elasticbeanstalk:List*
+          - elasticbeanstalk:RequestEnvironmentInfo
+          - elasticbeanstalk:RetrieveEnvironmentInfo
+          - elasticfilesystem:Describe*
+          - elasticloadbalancing:Describe*
+          - elasticmapreduce:Describe*
+          - elasticmapreduce:List*
+          - es:List*
+          - es:Describe*
+          - iam:List*
+          - iam:Get*
+          - iam:GenerateCredentialReport
+          - kinesis:Describe*
+          - kinesis:List*
+          - lambda:List*
+          - redshift:Describe*
+          - route53:Get*
+          - route53:List*
+          - rds:Describe*
+          - rds:ListTagsForResource
+          - s3:List*
+          - s3:GetBucketTagging
+          - s3:GetBucketLocation
+          - s3:GetBucketLogging
+          - s3:GetBucketVersioning
+          - s3:GetBucketWebsite
+          - sdb:GetAttributes
+          - sdb:List*
+          - ses:Get*
+          - ses:List*
+          - sns:Get*
+          - sns:List*
+          - sqs:GetQueueAttributes
+          - sqs:ListQueues
+          - storagegateway:List*
+          - storagegateway:Describe*
+          - workspaces:Describe*
+          Resource: "*"
+      Roles:
+        - !Ref OptimizedCloudManagerRole
+        - !Ref CloudHealthRole
+
+  AcceptAccountLinkRequestPolicy:
+    Type: AWS::IAM::Policy
+    Condition: ReslaeDeploy
+    Properties:
+      PolicyName: BctAcceptAccountLinkRequest
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - organizations:ListHandshakesForAccount
+              - organizations:AcceptHandshake
+              - organizations:DeclineHandshake
+            Resource: arn:aws:organizations::555703595940:handshake/*
+      Roles:
+        - !Ref OptimizedCloudManagerRole
+
+  SpotInstanceManagementPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BctSpotInstMgmt
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: GeneralSpotInstancesAccess
+            Action:
+              - ec2:RequestSpotInstances
+              - ec2:CancelSpotInstanceRequests
+              - ec2:CreateSpotDatafeedSubscription
+              - ec2:Describe*
+              - ec2:AssociateAddress
+              - ec2:AttachVolume
+              - ec2:ConfirmProductInstance
+              - ec2:CopyImage
+              - ec2:CopySnapshot
+              - ec2:CreateImage
+              - ec2:CreateSnapshot
+              - ec2:CreateTags
+              - ec2:CreateVolume
+              - ec2:DeleteTags
+              - ec2:DisassociateAddress
+              - ec2:ModifyImageAttribute
+              - ec2:ModifyInstanceAttribute
+              - ec2:MonitorInstances
+              - ec2:RebootInstances
+              - ec2:RegisterImage
+              - ec2:RunInstances
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:TerminateInstances
+              - ec2:UnassignPrivateIpAddresses
+              - ec2:DeregisterImage
+              - ec2:DeleteSnapshot
+              - ec2:DeleteVolume
+              - ec2:ModifyReservedInstances
+              - ec2:CreateReservedInstancesListing
+              - ec2:PurchaseReservedInstancesOffering
+              - ec2:CancelReservedInstancesListing
+              - ec2:ModifyNetworkInterfaceAttribute
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessELB
+            Action:
+              - elasticloadbalancing:Describe*
+              - elasticloadbalancing:Deregister*
+              - elasticloadbalancing:Register*
+              - elasticloadbalancing:RemoveTags
+              - elasticloadbalancing:RegisterTargets
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessCloudWatch
+            Action:
+              - cloudwatch:DescribeAlarmHistory
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:DescribeAlarmsForMetric
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:ListMetrics
+              - cloudwatch:PutMetricData
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessSNS
+            Action:
+              - sns:Publish
+              - sns:ListTopics
+              - sns:CreateTopic
+              - sns:GetTopicAttributes
+              - sns:ListSubscriptionsByTopic
+              - sns:Subscribe
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessIAM
+            Action:
+              - iam:AddRoleToInstanceProfile
+              - iam:ListInstanceProfiles
+              - iam:ListInstanceProfilesForRole
+              - iam:PassRole
+              - iam:ListRoles
+              - iam:ListAccountAliases
+              - iam:GetPolicyVersion
+              - iam:ListPolicies
+              - iam:GetPolicy
+              - iam:ListAttachedRolePolicies
+              - organizations:ListAccounts
+              - iam:CreateServiceLinkedRole
+              - iam:PutRolePolicy
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: GeneralAccessElaticBeanstalk
+            Action:
+              - elasticbeanstalk:Describe*
+              - elasticbeanstalk:RequestEnvironmentInfo
+              - elasticbeanstalk:RetrieveEnvironmentInfo
+              - elasticbeanstalk:ValidateConfigurationSettings
+              - elasticbeanstalk:UpdateEnvironment
+              - cloudformation:GetTemplate
+              - cloudformation:DescribeStackResources
+              - cloudformation:DescribeStackResource
+              - cloudformation:DescribeStacks
+              - cloudformation:ListStackResources
+              - cloudformation:UpdateStack
+              - cloudformation:DescribeStackEvent
+              - cloudformation:DescribeStackEvents
+              - logs:PutRetentionPolicy
+              - logs:createLogGroup
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessAutoScalingGroups
+            Action:
+              - autoscaling:*
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessEMR
+            Action:
+              - elasticmapreduce:*
+              - s3:GetObject
+            Effect: Allow
+            Resource:
+              - arn:aws:s3:::emr*
+          - Sid: AccessECS
+            Action:
+              - ecs:List*
+              - ecs:Describe*
+              - ecs:DeregisterContainerInstance
+              - ecs:UpdateContainerInstancesState
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessOpsWorks
+            Action:
+              - opsworks:DeregisterInstance
+              - opsworks:DescribeInstances
+              - opsworks:DescribeStacks
+              - opsworks:DescribeLayers
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessCodeDeploy
+            Action:
+              - codedeploy:*
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccessGeneralS3
+            Action:
+              - s3:List*
+              - s3:GetBucketLocation
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: AccesS3forElasticBeanstalk
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - arn:aws:s3:::elasticbeanstalk*
+      Roles:
+        - !Ref SpotinstRole
+
+
+Outputs:
+  OptimizedCloudManagerRoleArn:
+    Value: !GetAtt OptimizedCloudManagerRole.Arn
+    Export:
+      Name: BctOptimizedCloudManagerRoleArn
+
+  CloudHealthRoleArn:
+    Value: !GetAtt CloudHealthRole.Arn
+    Export:
+      Name: BctCloudHealthRoleArn
+
+  SpotinstRoleArn:
+    Value: !GetAtt SpotinstRole.Arn
+    Export:
+      Name: BctSpotinstRoleArn

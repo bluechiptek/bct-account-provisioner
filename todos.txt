@@ -1,6 +1,0 @@
-- better help info for ocms-account-provisioner.py
-- better input validation for args for ocms-account-provisioner.py
-- handle lists of profiles to include or exclude for ocms-account-provisioner.py
-- Unit tests for ocms-account-provisioner.py
-- Provision multiple accounts in parallel
-- Deprovision accounts

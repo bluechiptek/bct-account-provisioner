@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import logging
-import os
 from pathlib import Path
+import yaml
 
 from lib.provisioners import AwsProvisioner
 
@@ -16,34 +17,37 @@ parser = argparse.ArgumentParser(
                 "AWS credentials file."
 )
 
-parser.add_argument('--cfn-template-url',
-                    default='s3://bct-public-templates/ocms/ocms_iam_stack.yaml',
+
+parser.add_argument('--ConfigFile',
+                    default='config.yaml',
+                    help="Path to provisioner config file"
+                    )
+parser.add_argument('--CfnTemplateUrl',
                     help="s3 or file url to cloudformation template."
                     )
-parser.add_argument('--aws-region',
-                    default="us-east-1",
+parser.add_argument('--AwsRegion',
                     help="aws region used for cfn stack."
                     )
-parser.add_argument('--cfn-stack-name',
-                    default='BCT-OC-CostMgmt-IAM',
+parser.add_argument('--CfnStackName',
                     help="Name of cfn stack."
                     )
-parser.add_argument('--aws-include-profiles',
-                    default=None,
+parser.add_argument('--CfnParams',
+                    help="JSON object of CFN Params."
+                    )
+parser.add_argument('--IncludeProfiles',
                     help="comma separated list or regex of profiles that "
                          "should be provisioned"
                     )
-parser.add_argument('--aws-exclude-profiles',
-                    default=None,
+parser.add_argument('--ExcludeProfiles',
                     help="comma separated list or regex of profiles that "
                          "should not be provisioned."
                     )
-parser.add_argument('--no-confirm',
+parser.add_argument('--NoConfirm',
                     action='store_true',
                     help="Does not confirm the profiles that will be "
                          "confirmed prior to the provisioning them."
                     )
-parser.add_argument('--log-level',
+parser.add_argument('--LogLevel',
                     default='warn',
                     help="Log level sent to the console.")
 
@@ -52,15 +56,56 @@ args = parser.parse_args()
 ##########################################################################
 
 
-def list_or_str(text):
-    """returns either a list or string based on if text is comma separated"""
+def build_config(config_dict, args_dict):
+    """Returns dict based on dict of config file contents and dict of args"""
 
-    if text is None:
-        return None
-    elif "," in text:
-        return text.split(",")
-    else:
-        return text
+    # Set defaults
+    config = {
+                'CfnTemplateUrl': 'file://bct-ocms-iam.yaml',
+                'AwsRegion': 'us-east-1',
+                'CfnStackName': 'bct-ocms-iam',
+    }
+
+    args_with_values = {
+        key: value for (key, value) in args_dict.items() if value is not None
+    }
+
+    config.update(config_dict)
+    config.update(args_with_values)
+
+    if not (config['CfnTemplateUrl'].startswith("s3://")
+            or config['CfnTemplateUrl'].startswith("file://")):
+        raise ValueError(
+            "CfnTemplateUrl must start with s3:// or file://"
+        )
+
+    for key, value in config.items():
+        if type(value) is str:
+            try:
+                config[key] = dict(json.loads(value))
+                break
+            except ValueError:
+                pass
+
+        if type(value) is str and ',' in value:
+            config[key] = value.split(',')
+
+    return config
+
+
+def provision_accounts(config):
+    """Provisions AWS Accounts"""
+    
+    aws_provisioner = AwsProvisioner(
+                             config['CfnTemplateUrl'],
+                             config['AwsRegion'],
+                             config['CfnStackName'],
+                             config['CfnParams'],
+                             include_profiles=config.get('IncludeProfiles'),
+                             exclude_profiles=config.get('ExcludeProfiles')
+                                     )
+
+    aws_provisioner.provision_accounts(confirm=not config['NoConfirm'])
 
 
 if __name__ == '__main__':
@@ -70,29 +115,25 @@ if __name__ == '__main__':
         'warn':     logging.WARN,
         'error':    logging.ERROR
     }
-    log_level = logging_levels[args.log_level.lower()]
+    log_level = logging_levels[args.LogLevel.lower()]
 
     logger = logging.getLogger('lib')
     logger.setLevel(log_level)
     console_handler = logging.StreamHandler()
     logger.addHandler(console_handler)
 
-    if not (args.cfn_template_url.startswith("s3://")
-            or args.cfn_template_url.startswith("file://")):
+    if not Path(args.ConfigFile).exists():
         raise ValueError(
-            "cfn_template_url must start with s3:// or file://"
+            "Unable to access config file: {}".format(args.ConfigFile)
         )
 
-    aws_provisioner = AwsProvisioner(
-                                         args.cfn_template_url,
-                                         args.aws_region,
-                                         args.cfn_stack_name,
-                                         include_profiles=list_or_str(
-                                             args.aws_include_profiles
-                                         ),
-                                         exclude_profiles=list_or_str(
-                                             args.aws_exclude_profiles
-                                         )
-                                     )
+    with open(args.ConfigFile) as config_file:
+        provision_config = build_config(
+                                        yaml.load(config_file.read()),
+                                        vars(args)
+                            )
 
-    aws_provisioner.provision_accounts(confirm=not args.no_confirm)
+    provision_accounts(provision_config)
+
+
+
