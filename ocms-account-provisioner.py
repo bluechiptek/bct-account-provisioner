@@ -97,12 +97,12 @@ def provision_accounts(config):
     """Provisions AWS Accounts"""
     
     aws_provisioner = AwsProvisioner(
-                                 config['CfnTemplateUrl'],
-                                 config['AwsRegion'],
-                                 config['CfnStackName'],
-                                 config['CfnParams'],
-                                 include_profiles=config['IncludeProfiles'],
-                                 exclude_profiles=config['ExcludeProfiles']
+                             config['CfnTemplateUrl'],
+                             config['AwsRegion'],
+                             config['CfnStackName'],
+                             config['CfnParams'],
+                             include_profiles=config.get('IncludeProfiles'),
+                             exclude_profiles=config.get('ExcludeProfiles')
                                      )
 
     aws_provisioner.provision_accounts(confirm=not config['NoConfirm'])
@@ -133,9 +133,7 @@ if __name__ == '__main__':
                                         vars(args)
                             )
 
-    print(provision_config)
-    print(type(provision_config['CfnParams']))
-    #provision_accounts(provision_config)
+    provision_accounts(provision_config)
 
 
 
