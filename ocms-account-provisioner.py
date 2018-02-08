@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--ConfigFile',
                     default='config.yaml',
-                    help="Path to provisioner config file"
+                    help="Path to provisioner config file. Defaults to config.yaml"
                     )
 parser.add_argument('--CfnTemplateUrl',
                     help="s3 or file url to cloudformation template."
