@@ -53,6 +53,20 @@ By default the config.yaml is expected to be located at ./config.yaml. You can s
 
 To run the provisioner you will need to provide it with the values needed for the CloudFormation Parameters. This is typically done via a config.yaml file provided by BlueChipTek, but can be done via `--CfnParams` CLI argument. Defaults are set for all other arguments.
 
+By default the provisioner will prompt you to approve the list of accounts that it will provision. This can be skipped by setting the `--NoConfirm` CLI argument.
+
+```
+./ocms-account-provisioner.py --ConfigFile tests/config.yaml --IncludeProfiles include.*
+The following accounts will be provisioned:
+
+679806829XYZ (include-profile1)
+000925560XYZ (include-profile2)
+
+Proceed? [Y]/N
+```
+
+
+
 
 
 
