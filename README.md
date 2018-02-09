@@ -2,6 +2,8 @@
 
 The ocms-account-provisioner, referred to as just the provisioner, is a utility that can automate connecting your AWS accounts with the various services used to deliver an OptimizedCloud Blueprint. Connectivity from these various services is done by creating a CloudFormation stack in each of your desired AWS accounts with the neccisary roles and permissions.
 
+This software is distributed under the GNU General Public License v3.0. Please see the file LICENSE.txt for terms of use and redistribution.
+
 ## DESCRIPTION
 
 The provisioner facilities the creation of these CloudFormation stacks. It does this by discovering profiles via an AWS CLI credentials file and then creating the CloudFormation stacks in those accounts.
