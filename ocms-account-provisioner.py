@@ -20,16 +20,20 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--ConfigFile',
                     default='config.yaml',
-                    help="Path to provisioner config file. Defaults to config.yaml"
+                    help="Path to provisioner config file. "
+                         "Defaults to config.yaml"
                     )
 parser.add_argument('--CfnTemplateUrl',
-                    help="s3 or file url to cloudformation template."
+                    help="s3 or file url to cloudformation template. "
+                         "Defaults to file://bct-ocms-iam.yaml"
                     )
 parser.add_argument('--AwsRegion',
-                    help="aws region used for cfn stack."
+                    help="aws region used for cfn stack. "
+                         "Defaults to us-east-1"
                     )
 parser.add_argument('--CfnStackName',
-                    help="Name of cfn stack."
+                    help="Name of cfn stack. "
+                         "Defaults to bct-ocms-iam"
                     )
 parser.add_argument('--CfnParams',
                     help="JSON object of CFN Params."
