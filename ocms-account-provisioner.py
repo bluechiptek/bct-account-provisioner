@@ -25,7 +25,6 @@ parser.add_argument('--ConfigFile',
                     )
 parser.add_argument('--CfnTemplateUrl',
                     help="s3 or file url to cloudformation template. "
-                         "Defaults to file://bct-ocms-iam.yaml"
                     )
 parser.add_argument('--AwsRegion',
                     help="aws region used for cfn stack. "
@@ -65,7 +64,6 @@ def build_config(config_dict, args_dict):
 
     # Set defaults
     config = {
-                'CfnTemplateUrl': 'file://bct-ocms-iam.yaml',
                 'AwsRegion': 'us-east-1',
                 'CfnStackName': 'bct-ocms-iam',
     }
@@ -74,25 +72,31 @@ def build_config(config_dict, args_dict):
         key: value for (key, value) in args_dict.items() if value is not None
     }
 
-    config.update(config_dict)
-    config.update(args_with_values)
-
-    if not (config['CfnTemplateUrl'].startswith("s3://")
-            or config['CfnTemplateUrl'].startswith("file://")):
-        raise ValueError(
-            "CfnTemplateUrl must start with s3:// or file://"
-        )
-
-    for key, value in config.items():
+    for key, value in args_with_values.items():
         if type(value) is str:
             try:
-                config[key] = dict(json.loads(value))
+                args_with_values[key] = dict(json.loads(value))
                 break
             except ValueError:
                 pass
 
         if type(value) is str and ',' in value:
-            config[key] = value.split(',')
+            args_with_values[key] = value.split(',')
+
+    for key, value in args_with_values.items():
+        if type(value) is dict and config_dict[key]:
+            config_dict[key].update(args_with_values[key])
+        else:
+            config_dict[key] = args_with_values[key]
+
+    config.update(config_dict)
+
+    if (not config.get('CfnTemplateUrl')
+        or not (config['CfnTemplateUrl'].startswith("s3://")
+           or config['CfnTemplateUrl'].startswith("file://"))):
+                raise ValueError(
+                    "CfnTemplateUrl must start with s3:// or file://"
+                )
 
     return config
 

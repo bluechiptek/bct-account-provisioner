@@ -18,6 +18,7 @@ class AwsProvisioner:
                  exclude_profiles=None):
         self._region = region
         self._stack_name = stack_name
+        self._template_path = cfn_template_path
         self._template = Template(cfn_template_path)
         self._cfn_params = cfn_params
         self._accounts = AwsAccounts(
@@ -40,7 +41,11 @@ class AwsProvisioner:
                 id_name = "{} ({})".format(account.id, account.profile_name)
                 account_id_names.append(id_name)
             print(
-                "The following accounts will be provisioned: \n\n{}".format(
+                "The following accounts will be provisioned. \n"
+                "A CloudFormation stack named {} will be created in each one "
+                "using the template {}. \n\n{}".format(
+                    self._stack_name,
+                    self._template_path,
                     '\n'.join(account_id_names))
             )
             proceed = input("\nProceed? [Y]/N ") or "Y"
