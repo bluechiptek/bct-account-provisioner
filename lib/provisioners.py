@@ -42,8 +42,8 @@ class AwsProvisioner:
                 account_id_names.append(id_name)
             print(
                 "The following accounts will be provisioned. \n"
-                "A CloudFormation stack named {} will be created in each one "
-                "using the template {}. \n\n{}".format(
+                "A CloudFormation stack named {} will be created in each "
+                "account using the template {}. \n\n{}".format(
                     self._stack_name,
                     self._template_path,
                     '\n'.join(account_id_names))
