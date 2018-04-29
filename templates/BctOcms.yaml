@@ -18,9 +18,9 @@ Parameters:
     Type: String
     Default: 992800822204
 
-#  OcmsExternalId:
-#    Description: External Id used by the OCMS to access your AWS account
-#    Type: String
+  OcmsExternalId:
+    Description: External Id used by the OCMS to access your AWS account
+    Type: String
 
 
 Conditions:
@@ -46,9 +46,9 @@ Resources:
               AWS: !Ref OcmsAccountId
             Action:
               - sts:AssumeRole
-#            Condition:
-#              StringEquals:
-#                sts:ExternalId: !Ref OcmsExternalId
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref OcmsExternalId
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
         - arn:aws:iam::aws:policy/AmazonGuardDutyReadOnlyAccess
