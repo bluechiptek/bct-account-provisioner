@@ -23,26 +23,27 @@ The provisioner is configured either via CLI arguments, a config.yaml file or so
 CLI arguments are as follows, but can also be viewed with the `--help` argument (and should be in case this README hasn't been updated).
 
 ```
-  --ConfigFile CONFIGFILE
+  --config-file CONFIGFILE
                         Path to provisioner config file. Defaults to
                         config.yaml
-  --CfnTemplateUrl CFNTEMPLATEURL
+  --template-url CFNTEMPLATEURL
                         s3 or file url to cloudformation template.
-  --AwsRegion AWSREGION
-                        aws region used for cfn stack. Defaults to us-east-1
-  --CfnStackName CFNSTACKNAME
-                        Name of cfn stack. Defaults to bct-ocms-iam
-  --CfnParams CFNPARAMS
+  --region AWSREGION    aws region used for cfn stack. Defaults to us-east-1
+  --stack-name CFNSTACKNAME
+                        Name of cfn stack. Defaults to name of the template
+                        file (i.e. BctOcms.yaml becomes BctOcms)
+  --cfn-params CFNPARAMS
                         JSON object of CFN Params.
-  --IncludeProfiles INCLUDEPROFILES
+  --include-profiles INCLUDEPROFILES
                         comma separated list or regex of profiles that should
                         be provisioned
-  --ExcludeProfiles EXCLUDEPROFILES
+  --exclude-profiles EXCLUDEPROFILES
                         comma separated list or regex of profiles that should
                         not be provisioned.
-  --NoConfirm           Does not confirm the profiles that will be confirmed
+  --no-confirm          Does not confirm the profiles that will be confirmed
                         prior to the provisioning them.
-  --LogLevel LOGLEVEL   Log level sent to the console.
+  --log-level LOGLEVEL  Log level sent to the console.
+
 ```
 
 By default the config.yaml is expected to be located at ./config.yaml. You can specify any argument via the config.yaml or via a CLI argument. The CLI argument will override any config option set in the config.yaml. A sample config.yaml setting the CfnParams can be found at ./test/config.yaml.
@@ -51,13 +52,13 @@ By default the config.yaml is expected to be located at ./config.yaml. You can s
 
 To run the provisioner you will need to provide it with the URL for the CloudFormation template and values needed the templates's parameters.
 
-The CloudFormation template URL is provided via the `--CfnTemplateUrl` CLI argument. The URL must be provided in **file://** or **s3://** format.
+The CloudFormation template URL is provided via the `--template-url` CLI argument. The URL must be provided in **file://** or **s3://** format.
 
-Parameters for the CloudFormation template are typically provided by both a config.yaml file and via `--CfnParams` CLI argument. BlueChipTek will provide a config.yaml and you will provide additional arguments via the CLI as directed by BlueChipTek.
+Parameters for the CloudFormation template are typically provided by both a config.yaml file and via `--cfn-params` CLI argument. BlueChipTek will provide a config.yaml and you will provide additional arguments via the CLI as directed by BlueChipTek.
 
 Defaults are set for all other arguments.
 
-The `--IncludeProfiles` and `--ExcludeProfiles` can be used to select the profiles used in your AWS credentials file for account discovery. These parameters take either RegEx (not generic globing) or a comma separate list (no spaces between list items). By default the provisioner will prompt you to approve the list of accounts that it will provision.
+The `--include-profiles` and `--exclude-profiles` can be used to select the profiles used in your AWS credentials file for account discovery. These parameters take either RegEx (not generic globing) or a comma separate list (no spaces between list items). By default the provisioner will prompt you to approve the list of accounts that it will provision.
 
 The profiles used for account discovery should have the necessary permissions to create a CloudFormation Stack.
 
@@ -65,7 +66,7 @@ In the following example assume the following profiles are defined in the creden
 
 Use RegEx to only select profiles that start with *include*
 ```
-./ocms-account-provisioner.py --ConfigFile tests/config.yaml --IncludeProfiles include.*
+./ocms-account-provisioner.py --config-file tests/config.yaml --include-profiles include.*
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)
@@ -76,7 +77,7 @@ Proceed? [Y]/N
 
 Use a list to only select profiles *include-profile1* and *include-profile2*.
 ```
-./ocms-account-provisioner.py --ConfigFile tests/config.yaml --IncludeProfiles include-profile1,include-profile2
+./ocms-account-provisioner.py --config-file tests/config.yaml --include-profiles include-profile1,include-profile2
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)
@@ -87,7 +88,7 @@ Proceed? [Y]/N
 
 Use RegEx to only select profiles that contain the work *profile*, but exclude *exclude-profile1* and *exclude-profile2* via a list.
 ```
-./ocms-account-provisioner.py --ConfigFile tests/config.yaml --IncludeProfiles .*profile.* --ExcludeProfiles exclude-profile1,exclude-profile2
+./ocms-account-provisioner.py --config-file tests/config.yaml --exclude-profiles .*profile.* --exclude-profiles exclude-profile1,exclude-profile2
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)

@@ -1,21 +1,30 @@
 import moto
+import pytest
 
 from lib.provisioners import AwsProvisioner
 from tests import VALID_TEMPLATE1_URL
 
+TEST_PARAMS = [
+    {},
+    {'AwsAccountLinking': 'true', 'OcmsExternalId': 'test123'}
+]
+
+
+# Used to use different cfn_params in the test see
+# https://hackebrot.github.io/pytest-tricks/create_tests_via_parametrization/
+# for more details
+@pytest.fixture(params=TEST_PARAMS)
+def cfn_params(request):
+    return request.param
+
 
 @moto.mock_sts
 @moto.mock_cloudformation
-def test_provision_accounts():
-    test_region = "us-east-1"
-    test_stack_name = "test-stack"
-    test_profiles = ['profile-include1', 'profile-include2']
-    cfn_params = {
-                    'AwsResale': 'true',
-                    'OcmsExternalId': 'test123',
-                    'CloudHealthExternalId': 'test123',
-                    'SpotinstExternalId': 'test123'
-                 }
+def test_provision_accounts(cfn_params):
+    """Create stack with different params"""
+    test_region = 'us-east-1'
+    test_stack_name = 'test-stack'
+    test_profiles = ['profile-include1']
     provisioner = AwsProvisioner(
                                     VALID_TEMPLATE1_URL,
                                     test_region,
@@ -32,5 +41,6 @@ def test_provision_accounts():
         response = cfn.describe_stacks(StackName=test_stack_name)
         status = response['Stacks'][0]['StackStatus']
         stack_status.append(status)
-    assert stack_status == ['CREATE_COMPLETE', 'CREATE_COMPLETE']
+
+    assert stack_status == ['CREATE_COMPLETE']
 

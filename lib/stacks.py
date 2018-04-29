@@ -23,6 +23,7 @@ class Stack:
                      else boto3.client('cloudformation'))
         self._hexdigest = None
         self._name = stack_name
+        self._parameters = None
 
     def __str__(self):
         return str(self.to_dict())
@@ -54,18 +55,48 @@ class Stack:
                 for key in parameters]
         else:
             cfn_params = []
-        # See if create from scratch or update
-        # add new line to end of file if one doesn't exist
+        logger.debug("CFN Params to be used: {}".format(cfn_params))
+
+        # First see if the supplied template is the same as what is
+        # currently used for the stack. This is done by comparing the
+        # hexdigest of the template with the stack. If the stack's hexdigest
+        # is none, then that means the stack does not exist and should be
+        # created.
+        stack_updated = False
         if not template.endswith('\n'):
             template = template + '\n'
         hexdigest = sha1(template.encode()).hexdigest()
         if self.hexdigest is None:
             self._create(template, cfn_params)
+            stack_updated = True
         elif hexdigest != self.hexdigest:
             self._update(template, cfn_params)
+            stack_updated = True
             # remove cached hexdigest
             self._hexdigest = None
-        else:
+
+        # If the stack hasn't been updated then check to see if the supplied
+        #  params match the stacks current params. If they don't match then
+        # the params have been updated and the stack needs to be updated.
+        if not stack_updated:
+            stack_params = {
+                stack_param['ParameterKey']: stack_param['ParameterValue']
+                for stack_param in self.parameters
+            }
+            for param in cfn_params:
+                key = param['ParameterKey']
+                value = param['ParameterValue']
+                stack_value = stack_params.get(key, '')
+                if value != stack_value:
+                    logger.debug(
+                        "Template param {}:{} differs from "
+                        "stack param {}:{}".format(key, value,
+                                                   key, stack_value)
+                    )
+                    self._update(template, cfn_params)
+                    stack_updated = True
+
+        if not stack_updated:
             logger.info("CFN stack {} already up-to-date.".format(self.name))
 
     @property
@@ -163,6 +194,22 @@ class Stack:
         self._name = name
 
     @property
+    def parameters(self):
+        if self.status:
+            if not self._parameters:
+                try:
+                    response = self._cfn.describe_stacks(StackName=self.name)
+                except ClientError as e:
+                    if "does not exist" in e.response['Error']['Message']:
+                        return None
+                    else:
+                        raise
+                self._parameters = response['Stacks'][0]['Parameters']
+        else:
+            self._parameters = None
+        return self._parameters
+
+    @property
     def status(self):
         try:
             response = self._cfn.describe_stacks(StackName=self.name)
@@ -191,7 +238,7 @@ class Stack:
         self._cfn.update_stack(
             StackName=self.name,
             TemplateBody=template,
-            Capabilities=['CAPABILITY_IAM'],
+            Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
             Parameters=param_list
         )
         self.__cfn_wait('stack_update_complete')
@@ -232,11 +279,11 @@ class Template:
         s3 = boto3.client('s3')
         cfn = boto3.client('cloudformation')
         if self._template_path.startswith('file://'):
-            file_path = self._template_path.replace('file://','')
+            file_path = self._template_path.replace('file://', '')
             with open(file_path) as template_file:
                 template_body = template_file.read()
         elif self._template_path.startswith('s3://'):
-            s3_path = self._template_path.replace('s3://','')
+            s3_path = self._template_path.replace('s3://', '')
             s3_bucket, s3_key = s3_path.split('/', maxsplit=1)
             response = s3.get_object(Bucket=s3_bucket,
                                      Key=s3_key)
