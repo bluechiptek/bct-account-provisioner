@@ -16,7 +16,7 @@ ocms-account-provisioner requires aws cli to be installed. A requirements.txt ha
 
 ## CONFIGURATION
 
-By default the provisioner will read the default AWS CLI credentials file (~/aws/credentials), but a different credentials file can be used by setting the `AWS_SHARED_CREDENTIALS_FILE` environment variable . Additionally, the provisioner allows for you to include or  exclude discovered profiles via CLI arguments.
+By default the provisioner will read the default AWS CLI credentials file (~/.aws/credentials), but a different credentials file can be used by setting the `AWS_SHARED_CREDENTIALS_FILE` environment variable. Additionally, the provisioner allows for you to include or exclude discovered profiles via CLI arguments.
 
 The provisioner is configured either via CLI arguments, a config.yaml file or some combination. Typically the BlueChipTek cloud services engineering working on your service implementation will provide you a config.yaml file. This config.yaml file will contain details that need to be provided by BlueChipTek, such as External IDs.
 
@@ -86,7 +86,7 @@ The following accounts will be provisioned:
 Proceed? [Y]/N
 ```
 
-Use RegEx to only select profiles that contain the work *profile*, but exclude *exclude-profile1* and *exclude-profile2* via a list.
+Use RegEx to only select profiles that contain the word *profile*, but exclude *exclude-profile1* and *exclude-profile2* via a list.
 ```
 ./ocms-account-provisioner.py --config-file tests/config.yaml --exclude-profiles .*profile.* --exclude-profiles exclude-profile1,exclude-profile2
 The following accounts will be provisioned:
