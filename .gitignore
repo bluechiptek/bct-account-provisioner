@@ -2,5 +2,6 @@
 .cache/**
 .idea/**
 .venv/**
+scratch/
 config.yaml
 
