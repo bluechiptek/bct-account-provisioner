@@ -222,4 +222,3 @@ Outputs:
     Value: !GetAtt CloudHealthRole.Arn
     Export:
       Name: BctCloudHealthRoleArn
-

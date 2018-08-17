@@ -24,14 +24,14 @@ Parameters:
 
 
 Conditions:
-  # Here we want to set the condition ReslaeDeploy if the param
+  # Here we want to set the condition ResaleDeploy if the param
   # AwsAccountLinking is set to something other than false.
   #
-  # CFN isn't strait forward when wanting to check NOT condition, see
+  # CFN isn't straightforward when wanting to check NOT condition, see
   # https://stackoverflow.com/questions/41106216/negate-a-condition-in-cloudformation-template
   # for more details
   AwsAccountLinkingParam: !Equals [ !Ref AwsAccountLinking, false]
-  ReslaeDeploy: !Not [Condition: AwsAccountLinkingParam]
+  ResaleDeploy: !Not [Condition: AwsAccountLinkingParam]
 
 Resources:
   BctToolsRole:
@@ -148,7 +148,7 @@ Resources:
 
   BctMasterAccountRole:
     Type: AWS::IAM::Role
-    Condition: ReslaeDeploy
+    Condition: ResaleDeploy
     Properties:
       RoleName: BctMasterAccount
       AssumeRolePolicyDocument:
@@ -167,7 +167,7 @@ Resources:
 
   AcceptAccountLinkRequestPolicy:
     Type: AWS::IAM::Policy
-    Condition: ReslaeDeploy
+    Condition: ResaleDeploy
     Properties:
       PolicyName: BctAcceptAccountLinkRequest
       PolicyDocument:
@@ -187,5 +187,5 @@ Outputs:
     Value: !GetAtt BctToolsRole.Arn
 
   BctMasterAccountRoleArn:
-    Condition: ReslaeDeploy
+    Condition: ResaleDeploy
     Value: !GetAtt BctMasterAccountRole.Arn
