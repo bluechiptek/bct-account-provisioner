@@ -1,6 +1,6 @@
-# OCMS-ACCOUNT-PROVISIONER
+# BCT-ACCOUNT-PROVISIONER
 
-The ocms-account-provisioner, referred to as just the provisioner, is a utility that can automate connecting your AWS accounts with the various services used to deliver an OptimizedCloud service. Connectivity from these various services is done by creating a CloudFormation stack in each of your desired AWS accounts with the necessary roles and permissions.
+The bct-account-provisioner, referred to as just the provisioner, is a utility that can automate connecting your AWS accounts with the various services used to deliver services provided by BlueChipTek. Connectivity from these various services is done by creating a CloudFormation stack in each of your desired AWS accounts with the necessary roles and permissions.
 
 This software is distributed under the GNU General Public License v3.0. Please see the file LICENSE.txt for terms of use and redistribution.
 
@@ -10,9 +10,9 @@ The provisioner facilitates the creation of CloudFormation stacks. It does this 
 
 ## INSTALLATION
 
-ocms-account-provisioner is written in Python3.
+bct-account-provisioner is written in Python3.
 
-ocms-account-provisioner requires aws cli to be installed. A requirements.txt has been provided which includes other packages needed to run tests.
+bct-account-provisioner requires aws cli to be installed. A requirements.txt has been provided which includes other packages needed to run tests.
 
 ## CONFIGURATION
 
@@ -66,7 +66,7 @@ In the following example assume the following profiles are defined in the creden
 
 Use RegEx to only select profiles that start with *include*
 ```
-./ocms-account-provisioner.py --config-file tests/config.yaml --include-profiles include.*
+./bct-account-provisioner.py --template-url file://templates/BctTools.yaml --config-file tests/config.yaml --include-profiles include.*
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)
@@ -77,7 +77,7 @@ Proceed? [Y]/N
 
 Use a list to only select profiles *include-profile1* and *include-profile2*.
 ```
-./ocms-account-provisioner.py --config-file tests/config.yaml --include-profiles include-profile1,include-profile2
+./bct-account-provisioner.py --template-url file://templates/BctTools.yaml --config-file tests/config.yaml --include-profiles include-profile1,include-profile2
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)
@@ -88,7 +88,7 @@ Proceed? [Y]/N
 
 Use RegEx to only select profiles that contain the work *profile*, but exclude *exclude-profile1* and *exclude-profile2* via a list.
 ```
-./ocms-account-provisioner.py --config-file tests/config.yaml --exclude-profiles .*profile.* --exclude-profiles exclude-profile1,exclude-profile2
+./bct-account-provisioner.py --template-url file://templates/BctTools.yaml --config-file tests/config.yaml --exclude-profiles .*profile.* --exclude-profiles exclude-profile1,exclude-profile2
 The following accounts will be provisioned:
 
 679806829XYZ (include-profile1)
