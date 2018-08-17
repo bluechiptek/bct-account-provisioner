@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: Stack creates roles and permissions needed for BlueChipTek's Optimized Cloud Management System (OCMS) to access your account.
+Description: Stack creates roles and permissions needed for BlueChipTek to support your AWS Account.
 
 Parameters:
   AwsAccountLinking:
-    Description: Setting to True allows for the OCMS to link AWS to BCT
+    Description: Setting to True allows for the BCT to link your AWS to BCT's Master Account
     Type: String
     Default: false
 
@@ -13,12 +13,12 @@ Parameters:
     Type: String
     Default: 555703595940
 
-  OcmsAccountId:
-    Description: AWS Account Id running the OCMS
+  BctToolsAccountId:
+    Description: AWS Account Id running BCT's tools such as HealthChecks
     Type: String
     Default: 992800822204
 
-  OcmsExternalId:
+  BctToolsExternalId:
     Description: External Id used by the OCMS to access your AWS account
     Type: String
 
@@ -34,21 +34,21 @@ Conditions:
   ReslaeDeploy: !Not [Condition: AwsAccountLinkingParam]
 
 Resources:
-  OptimizedCloudManagerRole:
+  BctToolsRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: BctOptimizedCloudManager
+      RoleName: BctTools
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Ref OcmsAccountId
+              AWS: !Ref BctToolsAccountId
             Action:
               - sts:AssumeRole
             Condition:
               StringEquals:
-                sts:ExternalId: !Ref OcmsExternalId
+                sts:ExternalId: !Ref BctToolsExternalId
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
         - arn:aws:iam::aws:policy/AmazonGuardDutyReadOnlyAccess
@@ -56,7 +56,7 @@ Resources:
   ReadOnlyPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: BctOcmsReadOnly
+      ManagedPolicyName: BctToolsReadOnly
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -111,18 +111,24 @@ Resources:
             - iam:GenerateCredentialReport
             - kinesis:Describe*
             - kinesis:List*
+            - kms:DescribeKey
+            - kms:GetKeyRotationStatus
+            - kms:ListKeys
             - lambda:List*
+            - logs:Describe*
             - redshift:Describe*
             - route53:Get*
             - route53:List*
             - rds:Describe*
             - rds:ListTagsForResource
-            - s3:List*
-            - s3:GetBucketTagging
+            - s3:GetBucketAcl
             - s3:GetBucketLocation
             - s3:GetBucketLogging
+            - s3:GetBucketPolicy
+            - s3:GetBucketTagging
             - s3:GetBucketVersioning
             - s3:GetBucketWebsite
+            - s3:List*
             - sagemaker:Describe*
             - sagemaker:List*
             - sdb:GetAttributes
@@ -138,7 +144,7 @@ Resources:
             - workspaces:Describe*
           Resource: "*"
       Roles:
-        - !Ref OptimizedCloudManagerRole
+        - !Ref BctToolsRole
 
   BctMasterAccountRole:
     Type: AWS::IAM::Role
@@ -172,13 +178,13 @@ Resources:
               - organizations:ListHandshakesForAccount
               - organizations:AcceptHandshake
               - organizations:DeclineHandshake
-            Resource: arn:aws:organizations::555703595940:handshake/*
+            Resource: !Sub arn:aws:organizations::${BctMasterAccountAccountId}:handshake/*
       Roles:
         - !Ref BctMasterAccountRole
 
 Outputs:
-  OptimizedCloudManagerRoleArn:
-    Value: !GetAtt OptimizedCloudManagerRole.Arn
+  BctToolsRoleArn:
+    Value: !GetAtt BctToolsRole.Arn
 
   BctMasterAccountRoleArn:
     Condition: ReslaeDeploy

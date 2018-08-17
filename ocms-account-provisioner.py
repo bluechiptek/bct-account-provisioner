@@ -12,9 +12,9 @@ from lib.provisioners import AwsProvisioner
 # Args
 
 parser = argparse.ArgumentParser(
-    description="Provisions AWS accounts to be used with the OCMS. Use the "
-                "AWS_SHARED_CREDENTIALS_FILE env var to change the desired "
-                "AWS credentials file."
+    description="Provisions AWS accounts to be used with BCT and Related "
+                "Tools. Use the AWS_SHARED_CREDENTIALS_FILE env var to "
+                "change the desired AWS credentials file."
 )
 
 
@@ -38,7 +38,7 @@ parser.add_argument('--stack-name',
                     dest='CfnStackName',
                     help="Name of cfn stack. "
                          "Defaults to name of the template file "
-                         "(i.e. BctOcms.yaml becomes BctOcms) "
+                         "(i.e. BctTools.yaml becomes BctTools) "
                     )
 parser.add_argument('--cfn-params',
                     dest='CfnParams',
